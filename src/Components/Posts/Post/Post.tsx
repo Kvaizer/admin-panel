@@ -8,16 +8,22 @@ import {clearCommentsState, fetchCommentsByPostId} from '../../../Store/reducers
 import Comment from '../../Comment/Comment';
 import Paper from '@mui/material/Paper';
 import UserInPost from '../../User/UserInPost';
+import {deletePost} from '../../../Store/reducers/postsReducer';
+import {ModalWindow} from '../../features/Modal/Modal';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
+import {useNavigate} from 'react-router-dom';
 
-const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
+const Post: React.FC<PostComponentPropsType> = React.memo(({post, ref}) => {
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
     const comments = useAppSelector(state => state.commentsState.comments[post.id]);
     const offset = useAppSelector(state => state.commentsState.offset);
     const isMore = useAppSelector(state => state.commentsState.isMore);
 
     const [startValue, setStartValue] = useState<number>(0);
-    console.log(startValue)
+
     const showCommentsButtonHandler = useCallback(() => {
         dispatch(fetchCommentsByPostId({postId: post.id, params: {start: startValue, end: startValue + offset}}));
         setStartValue(startValue + offset);
@@ -25,11 +31,19 @@ const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
 
     const commentsTsx = useMemo(() => comments ? Object.values(comments).map((comment, index) => {
         return <Comment key={index} comment={comment}/>
-        }) : [], [comments]);
+    }) : [], [comments]);
 
     const hideCommentsButtonHandler = useCallback(() => {
         setStartValue(0);
         dispatch(clearCommentsState());
+    }, [])
+
+    const deleteButtonHandler = useCallback(() => {
+        dispatch(deletePost(post.id))
+    }, [])
+
+    const updateButtonHandler = useCallback(() => {
+        navigate(`${post.id}`)
     }, [])
 
     return (
@@ -37,7 +51,27 @@ const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
             <Grid key={post.id} container className={styles.container} direction={'column'}
                   style={{margin: '10px auto'}}>
                 <div className={styles.header}>
-                    <div className={styles.userName}><UserInPost userId={post.userId}/></div>
+                    <div className={styles.headerTop}>
+                        <div className={styles.userName}><UserInPost userId={post.userId}/></div>
+                        <div className={styles.buttonContainer}>
+                            <IconButton onClick={updateButtonHandler}>
+                                <EditIcon/>
+                            </IconButton>
+                            <ModalWindow title={'delete'}
+                                         description={'Do yo really want to remove this post?'}
+                                         children={
+                                             <Button
+                                                 key={post.id}
+                                                 onClick={deleteButtonHandler}
+                                                 style={{borderRadius: '30px'}}
+                                                 sx={{mt: 3, mb: 2}}
+                                                 variant={'contained'}
+                                                 color={'error'}
+                                                 size={'small'}
+                                             >Delete</Button>
+                                         }/>
+                        </div>
+                    </div>
                     <div className={styles.title}>{post.title}</div>
                 </div>
                 <div className={styles.body}>{post.body}</div>
@@ -67,6 +101,6 @@ const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
             </Grid>
         </Paper>
     );
-});
+})
 
 export default Post;

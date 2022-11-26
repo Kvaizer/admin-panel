@@ -6,7 +6,32 @@ import {imagePicker} from '../../utils/common';
 import {AppRootStateType} from '../store';
 
 const initialState: UsersInitialStateType = {
-    users: {},
+    users: {
+        100: {
+            id: 100,
+            name: 'Artem Sarkisyantc',
+            username: 'Kvaizer',
+            email: 'kvaizer99@gmail.com',
+            address: {
+                street: 'Green',
+                "suite": 'any',
+                "city": 'Jakarta',
+                "zipcode": '007',
+                "geo": {
+                    "lat": 'any',
+                    "lng": 'eng'
+                }
+            },
+            phone: '8800553535',
+            website: 'google.com',
+            avatar: imagePicker(),
+            company: {
+                name: 'Google',
+                catchPhrase: 'NbIAAAAA',
+                bs: 'any'
+            }
+        }
+    },
     status: StatusType.Idle,
     error: ''
 }
@@ -16,7 +41,6 @@ export const fetchUserById = createAsyncThunk<{ userId: number, user: UserType }
         const state = getState() as AppRootStateType
 
         if (state.usersState.users[userId]) {
-            console.log(state.usersState.users[userId])
             return rejectWithValue({error: 'User already exist'});
         }
 
@@ -32,7 +56,11 @@ export const fetchUserById = createAsyncThunk<{ userId: number, user: UserType }
 export const slice = createSlice({
     name: 'users',
     initialState,
-    reducers: {},
+    reducers: {
+        clearUsersState() {
+            return {...initialState}
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchUserById.pending, (state) => {

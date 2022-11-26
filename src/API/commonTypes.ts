@@ -9,6 +9,7 @@ export type QueryPaginationParams = {
     page?: number
     limit?: number
     order?: 'asc' | 'desc'
-    start: number
-    end: number
+    start?: number
+    end?: number
+    sort?: string
 }
