@@ -5,6 +5,7 @@ import {Route, Routes} from 'react-router-dom';
 import {Albums} from './Components/Albums/Albums';
 import {PostForm} from './Components/Posts/PostForm/PostForm';
 import {AlbumViewer} from './Components/Albums/ALbumViewer/AlbumViewer';
+import {TodoListPage} from './Components/TodoList/TodoListPage';
 
 const App = React.memo(() => {
     return (
@@ -19,7 +20,7 @@ const App = React.memo(() => {
                         <Route index element={<Albums/>}/>
                         <Route index={false} path=':albumId' element={<AlbumViewer/>}/>
                 </Route>
-                <Route path='todos' element={<div>Todos</div>}>
+                <Route path='todos' element={<TodoListPage/>}>
 
                 </Route>
             </Routes>

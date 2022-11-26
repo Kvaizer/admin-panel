@@ -20,16 +20,16 @@ export type AlbumsInitialStateType = {
     albums: Array<AlbumType>
     photos: {
         [albumId: number]: {
-            photosEntries: Array<PhotoType>,
-            totalCount: number,
+            photosEntries: Array<PhotoType>
+            totalCount: number
             start: number
         }
     }
     status: StatusType
     offset: number
     totalCount: number
-    error: string,
-    photosStart: number,
+    error: string
+    photosStart: number
     albumsStart: number
 }
 

@@ -44,7 +44,7 @@ export const Album: React.FC<AlbumComponentPropsType> = React.memo(({album}) => 
         item
         xs={6}>
         <div>
-            <NavLink to={`${album.id}`}>
+            <NavLink to={`${album.id}`} className={styles.link}>
                 <div className={styles.title} onClick={onTitleClickHandler}>{album.title}</div>
             </NavLink>
             <div className={styles.buttonContainer}>
