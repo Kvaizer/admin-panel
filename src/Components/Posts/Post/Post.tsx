@@ -15,7 +15,7 @@ import {useNavigate} from 'react-router-dom';
 import {
     selectCommentsByPostId,
     selectCommentsOffset,
-    selectIsMoreCommentsForFetching
+    selectTotalCountOfPostComments
 } from '../../../Store/reducers/posts/selectors';
 import {UserInPost} from '../../User/UserInPost';
 
@@ -26,7 +26,7 @@ export const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
 
     const comments = useAppSelector(state => selectCommentsByPostId(state, {postId: post.id}));
     const offset = useAppSelector(selectCommentsOffset);
-    const isMore = useAppSelector(selectIsMoreCommentsForFetching);
+    const totalCount = useAppSelector(selectTotalCountOfPostComments);
 
     const [startValue, setStartValue] = useState(0);
 
@@ -96,12 +96,12 @@ export const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
                             Hide Comments
                         </Button>
                         <Button
-                            disabled={!isMore}
+                            disabled={totalCount <= comments?.length}
                             onClick={showCommentsButtonHandler}
                             className={styles.button}
                             variant={'contained'}
                             color={'success'}>
-                            {comments ? isMore ? 'Show more' : 'No more comments' : 'Show comments'}
+                            {comments ? totalCount <= comments?.length ? 'No more comments' : 'Show more' : 'Show comments'}
                         </Button>
                     </div>
                 </div>

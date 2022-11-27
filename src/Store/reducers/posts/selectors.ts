@@ -22,5 +22,7 @@ export const selectCommentsOffset = (state: AppRootStateType) => state.commentsS
 
 export const selectIsMoreCommentsForFetching = (state: AppRootStateType) => state.commentsState.isMore
 
+export const selectTotalCountOfPostComments = (state: AppRootStateType) => state.commentsState.totalCount
+
 export const selectPostsStatus = (state: AppRootStateType) => state.postsState.status
 

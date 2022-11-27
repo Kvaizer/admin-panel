@@ -17,6 +17,7 @@ export type CommentsInitialStateType = {
     comments: {
         [postId: number]: Array<CommentType>
     }
+    totalCount: number
     status: StatusType
     offset: number
     isMore: boolean

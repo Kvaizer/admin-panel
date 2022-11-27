@@ -8,21 +8,23 @@ import {setAppError} from '../appReducer';
 const initialState: CommentsInitialStateType = {
     comments: {},
     status: StatusType.Idle,
+    totalCount: 0,
     offset: 2,
     isMore: true,
     error: ''
 }
 
-export const fetchCommentsByPostId = createAsyncThunk<{postId: number, comments: Array<CommentType>}, GetCommentsRequestParamsType<QueryPaginationParams>, { rejectValue: { error: string } }>('comments/fetchComments', async ({postId, params= {start: 0, end: 5}}, {dispatch, rejectWithValue}) => {
+export const fetchCommentsByPostId = createAsyncThunk<{postId: number, comments: Array<CommentType>, totalCount: number}, GetCommentsRequestParamsType<QueryPaginationParams>, { rejectValue: { error: string } }>('comments/fetchComments', async ({postId, params= {start: 0, end: 5}}, {dispatch, rejectWithValue}) => {
     try {
         const res = await postsAPI.getCommentsById({postId, params});
         const comments: CommentType[] = res.data;
+        const totalCount = Number(res.headers['x-total-count']);
 
         if(!comments.length) {
             dispatch(slice.actions.setIsMoreComments())
         }
 
-        return {postId, comments};
+        return {postId, comments, totalCount};
     } catch(e) {
         const err = e as Error | AxiosError<{ error: string }>;
         dispatch(setAppError({error: err.message}));
@@ -50,6 +52,7 @@ export const slice = createSlice({
         })
             .addCase(fetchCommentsByPostId.fulfilled, (state, {payload}) => {
                 state.comments[payload.postId] = state.comments[payload.postId] ? state.comments[payload.postId].concat(payload.comments) : payload.comments;
+                state.totalCount = payload.totalCount;
                 state.status = StatusType.Succeeded;
             })
             .addCase(fetchCommentsByPostId.rejected, (state, {payload}) => {
