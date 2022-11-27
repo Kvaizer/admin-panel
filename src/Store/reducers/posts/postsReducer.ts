@@ -1,10 +1,11 @@
 import {createAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {CreatePostRequestType, initialPostsStateType, PostType} from '../../API/posts/postTypes';
-import {QueryPaginationParams, StatusType} from '../../API/commonTypes';
-import {postsAPI} from '../../API/posts/postsAPI';
-import {v1} from 'uuid';
+import {CreatePostRequestType, InitialPostsStateType, PostType} from '../../../API/posts/postTypes';
+import {QueryPaginationParams, StatusType} from '../../../API/commonTypes';
+import {postsAPI} from '../../../API/posts/postsAPI';
+import {AxiosError} from 'axios';
+import {setAppError} from '../appReducer';
 
-const initialState: initialPostsStateType = {
+const initialState: InitialPostsStateType = {
     posts: [],
     myPosts: [],
     status: StatusType.Idle,
@@ -13,7 +14,8 @@ const initialState: initialPostsStateType = {
     error: '',
 };
 
-const setPostsStatus = createAction<{ status: StatusType }>('postActions/setPostsStatus');
+export const setPostsStatus = createAction<{ status: StatusType }>('postActions/setPostsStatus');
+export const clearPostsState = createAction('postAction/clearPostsState');
 
 export const fetchPosts = createAsyncThunk<{ posts: Array<PostType>, totalCount?: string }, QueryPaginationParams, { rejectValue: { error: string } }>('posts/fetchPosts',
     async (params = {start: 0, end: 5}, {dispatch, rejectWithValue}) => {
@@ -25,10 +27,12 @@ export const fetchPosts = createAsyncThunk<{ posts: Array<PostType>, totalCount?
             const totalCount = res.headers['x-total-count'];
 
             return {posts: res.data, totalCount}
-        } catch (e: any) {
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setPostsStatus({status: StatusType.Failed}));
+            dispatch(setAppError({error: err.message}));
 
-            return rejectWithValue({error: e.message})
+            return rejectWithValue({error: err.message})
         }
     })
 
@@ -48,9 +52,12 @@ export const createNewPost = createAsyncThunk<{ newPost: PostType }, CreatePostR
                     userId: 100,
                 }
             }
-        } catch (e: any) {
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setPostsStatus({status: StatusType.Failed}));
-            return rejectWithValue({error: e.message});
+            dispatch(setAppError({error: err.message}));
+
+            return rejectWithValue({error: err.message});
         }
     }
 )
@@ -64,10 +71,11 @@ export const updatePost = createAsyncThunk<{ updatedPost: PostType },  PostType,
             dispatch(setPostsStatus({status: StatusType.Succeeded}));
 
             return {updatedPost: post};
-        } catch(e: any) {
+        } catch(e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setPostsStatus({status: StatusType.Failed}));
 
-            return rejectWithValue({error: e.message, updatedPost: post});
+            return rejectWithValue({error: err.message, updatedPost: post});
         }
     })
 
@@ -80,10 +88,12 @@ export const deletePost = createAsyncThunk<{ postId: number }, number, { rejectV
             dispatch(setPostsStatus({status: StatusType.Succeeded}));
 
             return {postId}
-        } catch (e: any) {
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setPostsStatus({status: StatusType.Failed}));
+            dispatch(setAppError({error: err.message}));
 
-            return rejectWithValue({error: e.message});
+            return rejectWithValue({error: err.message});
         }
     })
 
@@ -91,12 +101,7 @@ export const slice = createSlice({
     name: 'posts',
     initialState,
     reducers: {
-        clearPostsState(state) {
-            return {
-                ...initialState,
-                myPosts: state.myPosts,
-            }
-        }
+
     },
     extraReducers: (builder) => {
         builder
@@ -154,9 +159,12 @@ export const slice = createSlice({
             .addCase(deletePost.rejected, (state, {payload}) => {
                 state.error = payload?.error ? payload.error : 'Some error occurred';
             })
+
+            .addCase(clearPostsState, (state) => {
+                state.posts = []
+            })
     }
 })
 
 
-export const {clearPostsState} = slice.actions
 export const postsReducer = slice.reducer

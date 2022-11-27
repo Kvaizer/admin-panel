@@ -5,12 +5,13 @@ import {useAppDispatch, useAppSelector} from '../../../../utils/hooks';
 import IconButton from '@mui/material/IconButton';
 import {Delete} from '@mui/icons-material';
 import EditableSpan from '../../../features/EditableSpan/EditableSpan';
-import {deleteTodo, updateTodo} from '../../../../Store/reducers/todosReducer';
+import {deleteTodo, updateTodo} from '../../../../Store/reducers/todos/todosReducer';
+import {selectUserFromTodosState} from '../../../../Store/reducers/users/selectors';
 
 export const Todo: React.FC<TodoPropsTypes> = React.memo(({todo, handleDragging}) => {
     const dispatch = useAppDispatch();
 
-    const userId = useAppSelector(state => state.todosState.userId)
+    const userId = useAppSelector(selectUserFromTodosState)
 
     const onCheckboxChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         dispatch(updateTodo({userId, updatedTodo: {
@@ -30,7 +31,7 @@ export const Todo: React.FC<TodoPropsTypes> = React.memo(({todo, handleDragging}
             }}))
     }, [todo, userId])
 
-    const handleDragEnd = () => handleDragging(false)
+    const handleDragEnd = useCallback(() => handleDragging(false), [handleDragging]);
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
         console.log(e.dataTransfer)
@@ -50,7 +51,7 @@ export const Todo: React.FC<TodoPropsTypes> = React.memo(({todo, handleDragging}
                 onChange={onCheckboxChangeHandler}
             />
 
-            <EditableSpan value={todo.title} onChange={onTitleChangeHandler}/>
+            <EditableSpan value={todo.title} onChange={onTitleChangeHandler} />
             <IconButton size={'small'} onClick={onDeleteClickHandler} style={{ position: 'absolute', top: '2px', right: '2px'} }>
                 <Delete fontSize={'small'}/>
             </IconButton>

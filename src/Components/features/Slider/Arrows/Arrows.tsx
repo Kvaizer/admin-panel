@@ -4,10 +4,9 @@ import classnames from "classnames";
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import {SliderContext} from '../Slider';
-import preloader from '../../../../assets/img/preloader.gif'
 
 export const Arrows: React.FC = () => {
-    const { changeSlide, isFetching } = useContext(SliderContext);
+    const { changeSlide } = useContext(SliderContext);
 
     const leftArrowClickHandler = () => {
         changeSlide(-1);

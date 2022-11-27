@@ -1,13 +1,12 @@
 import React, {useCallback, useState} from 'react';
-import {UserPropsType, UserType} from '../../API/users/usersTypes';
-import {useAppDispatch, useAppSelector} from '../../utils/hooks';
+import {UserPropsType} from '../../API/users/usersTypes';
+import {useAppSelector} from '../../utils/hooks';
 import styles from './User.module.sass'
 import PopUpUser from './PopUpUser/PopUpUser';
+import {selectUserById} from '../../Store/reducers/users/selectors';
 
-const UserInPost: React.FC<UserPropsType> = React.memo(({userId}) => {
-    const dispatch = useAppDispatch()
-
-    const user = useAppSelector(state => state.usersState.users[userId] ? state.usersState.users[userId] : {} as UserType)
+export const UserInPost: React.FC<UserPropsType> = React.memo(({userId}) => {
+    const user = useAppSelector(state => selectUserById(state, {userId}))
 
     const [viewFullUser, setViewFullUser] = useState<boolean>(false)
 
@@ -30,4 +29,3 @@ const UserInPost: React.FC<UserPropsType> = React.memo(({userId}) => {
     );
 })
 
-export default UserInPost;

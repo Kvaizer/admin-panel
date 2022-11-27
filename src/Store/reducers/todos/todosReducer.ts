@@ -1,7 +1,9 @@
 import {createAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {InitialTodosStateType, TodoType} from '../../API/todos/todosTypes';
-import {StatusType} from '../../API/commonTypes';
-import {todosAPI} from '../../API/todos/todosAPI';
+import {InitialTodosStateType, TodoType} from '../../../API/todos/todosTypes';
+import {StatusType} from '../../../API/commonTypes';
+import {todosAPI} from '../../../API/todos/todosAPI';
+import {AxiosError} from 'axios';
+import {setAppError} from '../appReducer';
 
 const initialState: InitialTodosStateType = {
     todos: [],
@@ -22,10 +24,12 @@ export const fetchTodos = createAsyncThunk<{ todos: TodoType[] }, number, { reje
             dispatch(setTodosStatus({status: StatusType.Succeeded}));
 
             return {todos: res.data};
-        } catch (e: any) {
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setTodosStatus({status: StatusType.Failed}));
+            dispatch(setAppError({error: err.message}));
 
-            return rejectWithValue({error: e.message});
+            return rejectWithValue({error: err.message});
         }
     }
 )
@@ -39,10 +43,11 @@ export const deleteTodo = createAsyncThunk<{ todoId: number }, { userId: number,
             dispatch(setTodosStatus({status: StatusType.Succeeded}));
 
             return {todoId};
-        } catch (e: any) {
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setTodosStatus({status: StatusType.Failed}));
 
-            return rejectWithValue({error: e.message, todoId});
+            return rejectWithValue({error: err.message, todoId});
         }
     }
 )
@@ -56,10 +61,11 @@ export const updateTodo = createAsyncThunk<{updatedTodo: TodoType}, { userId: nu
             dispatch(setTodosStatus({status: StatusType.Succeeded}));
 
             return {updatedTodo};
-        } catch(e: any) {
+        } catch(e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setTodosStatus({status: StatusType.Failed}));
 
-            return rejectWithValue({error: e.message, updatedTodo});
+            return rejectWithValue({error: err.message, updatedTodo});
         }
     }
 )
@@ -89,7 +95,7 @@ export const slice = createSlice({
             .addCase(updateTodo.rejected, (state, {payload}) => {
                 if(payload) {
                     const id = state.todos.findIndex(item => item.id === payload.updatedTodo.id);
-                    console.log(id)
+
                     if(id) {
                         state.todos[id] = payload.updatedTodo;
                     }

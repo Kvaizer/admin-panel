@@ -13,7 +13,7 @@ const PopUpUser: React.FC<PopUpUserPropsType> = ({user, avatar}) => {
             <div className={styles.info}>
                 <div> <span className={styles.text}>name: {user.name}</span></div>
                 <div> <span className={styles.text}>e-mail: {user.email}</span></div>
-                <div>
+                <div style={{display: 'flex', flexDirection: 'column'}}>
                     <span className={styles.text}>city: {user.address.city}</span>
                     <span className={styles.text}>street: {user.address.street}</span>
                 </div>

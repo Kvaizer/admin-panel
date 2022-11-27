@@ -4,7 +4,7 @@ import {Button, Grid, IconButton} from '@mui/material';
 import {Slider} from '../../features/Slider/Slider';
 import styles from './Album.module.sass';
 import {NavLink} from 'react-router-dom';
-import {clearPhotos, deleteAlbum, uploadPhoto} from '../../../Store/reducers/albumsReducer';
+import {clearPhotos, deleteAlbum, setAlbumsStatus, uploadPhoto} from '../../../Store/reducers/albums/albumsReducer';
 import {useAppDispatch} from '../../../utils/hooks';
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import {StatusType} from '../../../API/commonTypes';
@@ -14,9 +14,9 @@ import {ModalWindow} from '../../features/Modal/Modal';
 export const Album: React.FC<AlbumComponentPropsType> = React.memo(({album}) => {
     const dispatch = useAppDispatch();
 
-    const onDeleteButtonClickHandler = () => {
+    const onDeleteButtonClickHandler = useCallback(() => {
         dispatch(deleteAlbum(album.id))
-    }
+    }, [])
 
     const uploadHandler = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length) {
@@ -28,13 +28,13 @@ export const Album: React.FC<AlbumComponentPropsType> = React.memo(({album}) => 
                 })
             }
         } else {
-            dispatch(setAlbumsStatus(StatusType.Failed))
+            dispatch(setAlbumsStatus({status: StatusType.Failed}))
         }
     }
 
-    const onTitleClickHandler = useCallback(() => {
+    const onTitleClickHandler = () => {
         dispatch(clearPhotos())
-    }, []);
+    }
 
     return <Grid
         sx={{
@@ -84,7 +84,5 @@ export const Album: React.FC<AlbumComponentPropsType> = React.memo(({album}) => 
     </Grid>
 });
 
-function setAlbumsStatus(Failed: StatusType): any {
-    throw new Error('Function not implemented.');
-}
+
 

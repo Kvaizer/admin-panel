@@ -1,23 +1,37 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '../../utils/hooks';
-import {fetchAlbums, setAlbumsStart} from '../../Store/reducers/albumsReducer';
+import {
+    cleanAlbum,
+    cleanAlbumsState,
+    cleanPhotosEntries,
+    fetchAlbums,
+    setAlbumsStart
+} from '../../Store/reducers/albums/albumsReducer';
 import {Grid} from '@mui/material';
-import {AlbumType} from '../../API/albums/albumsTypes';
 import Container from '@mui/material/Container';
 import {Album} from './Album/Album';
+import {
+    selectAlbums,
+    selectAlbumsOffset,
+    selectAlbumsStart, selectAlbumsStatus,
+    selectTotalCountOfAlbums
+} from '../../Store/reducers/albums/selectors';
+import {StatusType} from '../../API/commonTypes';
+import LinearProgress from '@mui/material/LinearProgress';
 
-export const Albums: React.FC = React.memo(() => {
+export const Albums: React.FC = () => {
     const dispatch = useAppDispatch()
 
     const block = useRef(null);
 
-    const albums = useAppSelector(state => state.albumsState.albums ? state.albumsState.albums : [] as Array<AlbumType>)
-    const totalCount = useAppSelector(state => state.albumsState.totalCount);
-    const offset = useAppSelector(state => state.albumsState.offset);
-    const startFromState = useAppSelector(state => state.albumsState.albumsStart);
+    const albums = useAppSelector(selectAlbums);
+    const totalCount = useAppSelector(selectTotalCountOfAlbums);
+    const offset = useAppSelector(selectAlbumsOffset);
+    const startFromState = useAppSelector(selectAlbumsStart);
+    const status = useAppSelector(selectAlbumsStatus)
 
-    const [start, setStart] = useState<number>(startFromState);
-    const [isFetching, setIsFetching] = useState<boolean>(true);
+    const [start, setStart] = useState(startFromState);
+    const [isFetching, setIsFetching] = useState(true);
 
     useEffect(() => {
         const fn = async () => {
@@ -45,6 +59,13 @@ export const Albums: React.FC = React.memo(() => {
         }
     }, [totalCount])
 
+    useEffect(() => {
+        return () => {
+            dispatch(cleanPhotosEntries());
+            dispatch(cleanAlbumsState());
+        }
+    }, [])
+
     const infiniteScrollHandler = useCallback(() => {
         if (!block.current) return;
 
@@ -61,6 +82,7 @@ export const Albums: React.FC = React.memo(() => {
 
     return (
         <div onScroll={infiniteScrollHandler} ref={block}>
+            {status === StatusType.InProgress ? <LinearProgress /> : null}
             <Container
                 sx={{
                     display: 'flex',
@@ -84,5 +106,5 @@ export const Albums: React.FC = React.memo(() => {
             </Container>
         </div>
     );
-});
+}
 

@@ -1,22 +1,22 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {Slider} from '../../features/Slider/Slider';
 import styles from './AlbumViewer.module.sass'
 import IconButton from '@mui/material/IconButton';
 import ReplyIcon from '@mui/icons-material/Reply';
 import {useAppDispatch} from '../../../utils/hooks';
-import {clearPhotos} from '../../../Store/reducers/albumsReducer';
+import {clearPhotos} from '../../../Store/reducers/albums/albumsReducer';
 
-export const AlbumViewer = () => {
+export const AlbumViewer: React.FC = () => {
     const {albumId} = useParams();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
 
-    const onBackButtonClickHandler = () => {
+    const onBackButtonClickHandler = useCallback(() => {
         dispatch(clearPhotos());
         navigate('/albums');
-    }
+    }, []);
 
     return (
         <div className={styles.container}>

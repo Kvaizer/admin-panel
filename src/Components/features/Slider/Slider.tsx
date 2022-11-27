@@ -1,11 +1,16 @@
-import React, {createContext, useEffect, useMemo, useState} from 'react';
+import React, {createContext, useCallback, useEffect, useMemo, useState} from 'react';
 import {Arrows} from './Arrows/Arrows';
 import styles from './Slider.module.sass'
 import {Dots} from './Dots/Dots';
 import {SlidesList} from './SlidesList/SlidesList';
 import './Slider.module.sass'
-import {cleanAlbum, fetchPhotosByAlbumId, setPhotosStart} from '../../../Store/reducers/albumsReducer';
+import {cleanAlbum, fetchPhotosByAlbumId, setPhotosStart} from '../../../Store/reducers/albums/albumsReducer';
 import {useAppDispatch, useAppSelector} from '../../../utils/hooks';
+import {
+    selectAlbumsOffset, selectAlbumStart,
+    selectPhotos,
+    selectTotalCountOfPhotosInAlbum
+} from '../../../Store/reducers/albums/selectors';
 
 type SliderPropsType = {
     width: string
@@ -16,7 +21,7 @@ type SliderPropsType = {
     size: 0 | 1;
 }
 
-interface SliderContextState {
+type SliderContextState = {
     goToSlide: (number: number) => void,
     changeSlide: (direction: number) => void,
     slidesCount: number,
@@ -45,10 +50,10 @@ export const Slider: React.FC<SliderPropsType> = ({
 }) => {
     const dispatch = useAppDispatch();
 
-    const photos = useAppSelector(state => state.albumsState.photos[albumId].photosEntries);
-    const totalCount = useAppSelector(state => state.albumsState.photos[albumId].totalCount);
-    const offset = useAppSelector(state => state.albumsState.offset);
-    const startFromState = useAppSelector(state => state.albumsState.photos[albumId].start);
+    const photos = useAppSelector(state => selectPhotos(state, {albumId}));
+    const totalCount = useAppSelector(state => selectTotalCountOfPhotosInAlbum(state, {albumId}));
+    const offset = useAppSelector(selectAlbumsOffset);
+    const startFromState = useAppSelector(state => selectAlbumStart(state, {albumId}));
 
     const items = useMemo(() => {
         return photos.map(photo => {
@@ -68,11 +73,8 @@ export const Slider: React.FC<SliderPropsType> = ({
             }
 
             dispatch(fetchPhotosByAlbumId({params: {start: start, end: start + offset}, albumId}));
-            setStart(startFromState + offset)
+            setStart(start + offset);
             setIsFetching(false);
-        }
-        return () => {
-
         }
     }, [isFetching]);
 
@@ -88,7 +90,9 @@ export const Slider: React.FC<SliderPropsType> = ({
         };
     }, [items.length, slide])
 
-    const changeSlide = (direction = 1) => {
+
+
+    const changeSlide = useCallback((direction = 1) => {
         let slideNumber = 0;
 
         if (slide + direction < 0) {
@@ -100,11 +104,11 @@ export const Slider: React.FC<SliderPropsType> = ({
         }
 
         setSlide(slideNumber);
-    };
+    }, [slide, items])
 
-    const goToSlide = (number: number) => {
+    const goToSlide = useCallback((number: number) => {
         setSlide(number % items.length);
-    };
+    }, [items])
 
     return (
         <div

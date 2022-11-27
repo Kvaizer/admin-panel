@@ -1,15 +1,14 @@
 import React from 'react';
-import {NavLink} from 'react-router-dom';
-import {Paper} from '@mui/material';
+import gif from  '../../assets/img/gif.gif';
+import styles from './HomePage.module.sass';
 
-const HomePage = () => {
+export const HomePage = () => {
     return (
-        <Paper>
-            <NavLink to='/posts'><button>Posts</button></NavLink>
-            <NavLink to='/albums'><button>Albums</button></NavLink>
-            <NavLink to='/todos'><button>Todos</button></NavLink>
-        </Paper>
+            <div className={styles.container}>
+                <h1>Admin Page</h1>
+                <h2>Plz choose any category</h2>
+                <img src={gif} alt=""/>
+            </div>
     );
 };
 
-export default HomePage;

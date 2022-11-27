@@ -1,4 +1,3 @@
-import classnames from 'classnames';
 import React, {useContext} from 'react';
 import styles from '../../Slider.module.sass'
 import {SliderContext} from '../../Slider';
@@ -10,7 +9,7 @@ type SlidePropsType = {
     }
 }
 
-export const Slide: React.FC<SlidePropsType> = ({item: {url, title}}) => {
+export const Slide: React.FC<SlidePropsType> = React.memo(({item: {url, title}}) => {
     const {size} = useContext(SliderContext)
 
     return (
@@ -19,5 +18,5 @@ export const Slide: React.FC<SlidePropsType> = ({item: {url, title}}) => {
             <div className={styles.slideTitle}>{title}</div>
         </div>
     );
-};
+})
 

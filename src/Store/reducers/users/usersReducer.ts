@@ -1,9 +1,11 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {UsersInitialStateType, UserType} from '../../API/users/usersTypes';
-import {StatusType} from '../../API/commonTypes';
-import {userAPI} from '../../API/users/userAPI';
-import {imagePicker} from '../../utils/common';
-import {AppRootStateType} from '../store';
+import {createAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {UsersInitialStateType, UserType} from '../../../API/users/usersTypes';
+import {StatusType} from '../../../API/commonTypes';
+import {userAPI} from '../../../API/users/userAPI';
+import {imagePicker} from '../../../utils/common';
+import {AppRootStateType} from '../../store';
+import {AxiosError} from 'axios';
+import {setAppError} from '../appReducer';
 
 const initialState: UsersInitialStateType = {
     users: {
@@ -36,8 +38,11 @@ const initialState: UsersInitialStateType = {
     error: ''
 }
 
+export const setUsersStatus = createAction<{status: StatusType}>('users/setUsersStatus')
+
 export const fetchUserById = createAsyncThunk<{ userId: number, user: UserType }, number, { rejectValue: { error: string } }>('users/fetchUser',
-    async (userId, {rejectWithValue, getState}) => {
+    async (userId, {dispatch, rejectWithValue, getState}) => {
+        dispatch(setUsersStatus({status: StatusType.InProgress}));
         const state = getState() as AppRootStateType
 
         if (state.usersState.users[userId]) {
@@ -47,20 +52,22 @@ export const fetchUserById = createAsyncThunk<{ userId: number, user: UserType }
         try {
             const res = await userAPI.getUser(userId);
             const user = res.data;
+            dispatch(setUsersStatus({status: StatusType.Succeeded}));
+
             return {user, userId}
-        } catch (e: any) {
-            return rejectWithValue({error: e.message})
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>;
+            dispatch(setUsersStatus({status: StatusType.Failed}));
+            dispatch(setAppError({error: err.message}));
+
+            return rejectWithValue({error: err.message});
         }
     })
 
 export const slice = createSlice({
     name: 'users',
     initialState,
-    reducers: {
-        clearUsersState() {
-            return {...initialState}
-        }
-    },
+    reducers: {},
     extraReducers: (builder) => {
         builder
             .addCase(fetchUserById.pending, (state) => {

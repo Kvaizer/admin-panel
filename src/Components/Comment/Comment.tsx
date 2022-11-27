@@ -3,7 +3,7 @@ import {Grid} from '@mui/material';
 import {CommentPropsType} from '../../API/posts/commentsTypes';
 import styles from './Comment.module.sass'
 
-const Comment: React.FC<CommentPropsType> = ({comment}) => {
+const Comment: React.FC<CommentPropsType> = React.memo(({comment}) => {
     return (
         <Grid container direction={'column'} className={styles.container}>
             <div className={styles.header}>
@@ -14,6 +14,6 @@ const Comment: React.FC<CommentPropsType> = ({comment}) => {
             <hr className={styles.line}/>
         </Grid>
     );
-};
+})
 
 export default Comment;

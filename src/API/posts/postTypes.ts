@@ -10,7 +10,7 @@ export type PostType = {
 }
 
 
-export type initialPostsStateType = {
+export type InitialPostsStateType = {
     posts: Array<PostType>
     status: StatusType,
     offset: number,

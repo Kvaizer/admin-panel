@@ -1,23 +1,24 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '../../utils/hooks';
 import {SortedTodosType} from '../../API/todos/todosTypes';
 import {TodoList} from './TodoList/TodoList';
-import {fetchTodos, updateTodo} from '../../Store/reducers/todosReducer';
-import {Grid, LinearProgress} from '@mui/material';
+import {fetchTodos, updateTodo} from '../../Store/reducers/todos/todosReducer';
+import {Grid} from '@mui/material';
 import {StatusType} from '../../API/commonTypes';
+import {selectTodos, selectTodosStatus} from '../../Store/reducers/todos/selectors';
+import LinearProgress from '@mui/material/LinearProgress';
 
-export const TodoListPage = () => {
+export const TodoListPage: React.FC = () => {
     const dispatch = useAppDispatch();
 
-    const todos = useAppSelector(state => state.todosState.todos);
-    const status = useAppSelector(state => state.todosState.status);
-
+    const todos = useAppSelector(selectTodos);
+    const status = useAppSelector(selectTodosStatus);
+    console.log(status)
     useEffect(() => {
         dispatch(fetchTodos(1));
-    }, [])
+    }, []);
 
     const sortedTodos = useMemo(() => {
-        console.log(todos)
         return todos.reduce((acc: SortedTodosType, todo) => {
             if (todo.completed) {
                 acc.completed.push(todo);
@@ -32,7 +33,8 @@ export const TodoListPage = () => {
     }, [todos])
 
     const [isDragging, setIsDragging] = useState(false);
-    const handleDragging = (dragging: boolean) => setIsDragging(dragging);
+
+    const handleDragging = useCallback((isDragging: boolean) => setIsDragging(isDragging), [isDragging]);
 
     const handleUpdateList = (id: number, status: boolean) => {
         const todo = todos.find(item => item.id === id)
@@ -46,9 +48,9 @@ export const TodoListPage = () => {
             }))
         }
     }
-    console.log(status)
+
     return (
-        <>
+        <div style={{width: '100%'}}>
             {status === StatusType.InProgress ? <LinearProgress/> : null}
             <Grid
                 container
@@ -60,6 +62,7 @@ export const TodoListPage = () => {
                     alignItems: 'center',
                     height: '100vh',
                 }}>
+
                 <TodoList
                     todos={sortedTodos.completed}
                     title={'Completed'}
@@ -73,7 +76,8 @@ export const TodoListPage = () => {
                     handleUpdateList={handleUpdateList}
                     handleDragging={handleDragging}/>
             </Grid>
-        </>
+        </div>
     );
 };
+
 

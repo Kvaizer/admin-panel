@@ -1,7 +1,9 @@
 import {createAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {AlbumsInitialStateType, AlbumType, PhotoType} from '../../API/albums/albumsTypes';
-import {QueryPaginationParams, StatusType} from '../../API/commonTypes';
-import {albumsAPI} from '../../API/albums/albumsAPI';
+import {AlbumsInitialStateType, AlbumType, PhotoType} from '../../../API/albums/albumsTypes';
+import {QueryPaginationParams, StatusType} from '../../../API/commonTypes';
+import {albumsAPI} from '../../../API/albums/albumsAPI';
+import {AxiosError} from 'axios';
+import {setAppError} from '../appReducer';
 
 const initialState: AlbumsInitialStateType = {
     albums: [],
@@ -11,7 +13,7 @@ const initialState: AlbumsInitialStateType = {
     totalCount: 0,
     error: '',
     photosStart: 0,
-    albumsStart: 0
+    albumsStart: 0,
 };
 
 export const cleanAlbum = createAction<{ albumId: number }>('albums/cleanAlbum');
@@ -20,6 +22,8 @@ export const setPhotosStart = createAction('albums/setPhotosStart');
 export const setAlbumsStart = createAction('albums/setAlbumsStart');
 export const setAlbumStart = createAction<{albumId: number, start: number}>('albums/setAlbumStart');
 export const clearPhotos = createAction('albums/clearPhotos');
+export const cleanPhotosEntries = createAction('albums/cleanPhotosEntries');
+export const cleanAlbumsState = createAction('albums/cleanAlbumsState');
 
 export const fetchAlbums = createAsyncThunk<{ albums: Array<AlbumType>, totalCount?: string }, QueryPaginationParams, { rejectValue: { error: string } }>('albums/fetchAlbums',
     async (params, {dispatch, rejectWithValue}) => {
@@ -33,10 +37,11 @@ export const fetchAlbums = createAsyncThunk<{ albums: Array<AlbumType>, totalCou
             dispatch(setAlbumsStatus({status: StatusType.Succeeded}));
 
             return {albums, totalCount};
-        } catch (e: any) {
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>;
             dispatch(setAlbumsStatus({status: StatusType.Failed}));
 
-            return rejectWithValue({error: e.message});
+            return rejectWithValue({error: err.message});
         }
     }
 );
@@ -52,10 +57,12 @@ export const fetchPhotosByAlbumId = createAsyncThunk<{ photos: Array<PhotoType>,
         dispatch(setAlbumsStatus({status: StatusType.Succeeded}));
 
         return {photos, albumId, totalCount}
-    } catch (e: any) {
+    } catch (e) {
+        const err = e as Error | AxiosError<{ error: string }>;
         dispatch(setAlbumsStatus({status: StatusType.Failed}));
+        dispatch(setAppError({error: err.message}));
 
-        return rejectWithValue({error: e.message})
+        return rejectWithValue({error: err.message})
     }
 })
 
@@ -66,10 +73,12 @@ export const uploadPhoto = createAsyncThunk<{ imageUrl: string }, { image: strin
             const res = await albumsAPI.uploadImage(image);
             dispatch(setAlbumsStatus({status: StatusType.Succeeded}));
 
-            return {imageUrl: res.data.data.link}
-        } catch (e: any) {
+            return {imageUrl: res.data.data.link};
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>
+            dispatch(setAlbumsStatus({status: StatusType.Succeeded}));
 
-            return rejectWithValue({error: e.message, image, albumId})
+            return rejectWithValue({error: err.message, image, albumId});
         }
     }
 )
@@ -82,11 +91,14 @@ export const deleteAlbum = createAsyncThunk<{ albumId: number }, number, { rejec
             await albumsAPI.deleteAlbum(albumId);
             dispatch(setAlbumsStatus({status: StatusType.Succeeded}));
 
-            return {albumId}
-        } catch (e: any) {
-            dispatch(setAlbumsStatus({status: StatusType.Failed}));
 
-            return rejectWithValue({error: e.message})
+            return {albumId}
+        } catch (e) {
+            const err = e as Error | AxiosError<{ error: string }>
+            dispatch(setAlbumsStatus({status: StatusType.Failed}));
+            dispatch(setAppError({error: err.message}));
+
+            return rejectWithValue({error: err.message});
         }
     }
 )
@@ -159,6 +171,11 @@ export const slice = createSlice({
                if(album) album.start = payload.start;
             })
 
+            .addCase(cleanAlbumsState, (state) => {
+                state.albums = [];
+                state.albumsStart = 0;
+            })
+
             .addCase(clearPhotos, (state) => {
                 for(const key in state.photos) {
                     state.photos[Number(key)] = {
@@ -166,6 +183,14 @@ export const slice = createSlice({
                         totalCount: 0,
                         start: 0,
                     }
+                }
+            })
+
+            .addCase(cleanPhotosEntries, (state) => {
+                for(const key in state.photos) {
+                    state.photos[key].photosEntries = [];
+                    state.photos[key].totalCount = 0;
+                    state.photos[key].start = 0;
                 }
             })
     })

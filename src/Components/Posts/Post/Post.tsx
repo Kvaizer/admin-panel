@@ -4,25 +4,31 @@ import Grid from '@mui/material/Grid';
 import styles from './Post.module.sass'
 import {useAppDispatch, useAppSelector} from '../../../utils/hooks';
 import {Button} from '@mui/material';
-import {clearCommentsState, fetchCommentsByPostId} from '../../../Store/reducers/commentsReducer';
+import {clearCommentsState, fetchCommentsByPostId} from '../../../Store/reducers/posts/commentsReducer';
 import Comment from '../../Comment/Comment';
 import Paper from '@mui/material/Paper';
-import UserInPost from '../../User/UserInPost';
-import {deletePost} from '../../../Store/reducers/postsReducer';
+import {deletePost} from '../../../Store/reducers/posts/postsReducer';
 import {ModalWindow} from '../../features/Modal/Modal';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import {useNavigate} from 'react-router-dom';
+import {
+    selectCommentsByPostId,
+    selectCommentsOffset,
+    selectIsMoreCommentsForFetching
+} from '../../../Store/reducers/posts/selectors';
+import {UserInPost} from '../../User/UserInPost';
 
-const Post: React.FC<PostComponentPropsType> = React.memo(({post, ref}) => {
+
+export const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    const comments = useAppSelector(state => state.commentsState.comments[post.id]);
-    const offset = useAppSelector(state => state.commentsState.offset);
-    const isMore = useAppSelector(state => state.commentsState.isMore);
+    const comments = useAppSelector(state => selectCommentsByPostId(state, {postId: post.id}));
+    const offset = useAppSelector(selectCommentsOffset);
+    const isMore = useAppSelector(selectIsMoreCommentsForFetching);
 
-    const [startValue, setStartValue] = useState<number>(0);
+    const [startValue, setStartValue] = useState(0);
 
     const showCommentsButtonHandler = useCallback(() => {
         dispatch(fetchCommentsByPostId({postId: post.id, params: {start: startValue, end: startValue + offset}}));
@@ -40,14 +46,15 @@ const Post: React.FC<PostComponentPropsType> = React.memo(({post, ref}) => {
 
     const deleteButtonHandler = useCallback(() => {
         dispatch(deletePost(post.id))
-    }, [])
+    }, [post])
 
     const updateButtonHandler = useCallback(() => {
         navigate(`${post.id}`)
-    }, [])
+    }, [post])
 
     return (
         <Paper elevation={6} className={styles.wrapper}>
+
             <Grid key={post.id} container className={styles.container} direction={'column'}
                   style={{margin: '10px auto'}}>
                 <div className={styles.header}>
@@ -103,4 +110,3 @@ const Post: React.FC<PostComponentPropsType> = React.memo(({post, ref}) => {
     );
 })
 
-export default Post;

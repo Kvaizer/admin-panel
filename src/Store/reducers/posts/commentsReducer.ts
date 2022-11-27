@@ -1,7 +1,9 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {CommentsInitialStateType, CommentType, GetCommentsRequestParamsType} from '../../API/posts/commentsTypes';
-import {QueryPaginationParams, StatusType} from '../../API/commonTypes';
-import {postsAPI} from '../../API/posts/postsAPI';
+import {CommentsInitialStateType, CommentType, GetCommentsRequestParamsType} from '../../../API/posts/commentsTypes';
+import {QueryPaginationParams, StatusType} from '../../../API/commonTypes';
+import {postsAPI} from '../../../API/posts/postsAPI';
+import {AxiosError} from 'axios';
+import {setAppError} from '../appReducer';
 
 const initialState: CommentsInitialStateType = {
     comments: {},
@@ -21,8 +23,11 @@ export const fetchCommentsByPostId = createAsyncThunk<{postId: number, comments:
         }
 
         return {postId, comments};
-    } catch(e: any) {
-        return rejectWithValue({error: e.message})
+    } catch(e) {
+        const err = e as Error | AxiosError<{ error: string }>;
+        dispatch(setAppError({error: err.message}));
+
+        return rejectWithValue({error: err.message})
     }
 })
 
@@ -55,4 +60,4 @@ export const slice = createSlice({
 })
 
 export const commentsReducer = slice.reducer;
-export const {setIsMoreComments, clearCommentsState} = slice.actions;
+export const {clearCommentsState} = slice.actions;

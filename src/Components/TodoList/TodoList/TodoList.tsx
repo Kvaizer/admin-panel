@@ -1,4 +1,4 @@
-import React, {DragEvent} from 'react';
+import React, {DragEvent, useCallback} from 'react';
 import {TodoListPropsType} from '../../../API/todos/todosTypes';
 import {Paper} from '@mui/material';
 import {Todo} from './Todo/Todo';
@@ -6,13 +6,13 @@ import Grid from '@mui/material/Grid';
 import styles from './TodoList.module.sass'
 
 export const TodoList: React.FC<TodoListPropsType> = React.memo(({todos, title, handleDragging, handleUpdateList, isDragging}) => {
-    const handleDragOver = (e: DragEvent<HTMLDivElement>) => e.preventDefault();
+    const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => e.preventDefault(), [])
 
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault()
-        handleUpdateList(+e.dataTransfer.getData('todo'), title === 'Completed')
-        handleDragging(false)
-    }
+    const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        handleUpdateList(+e.dataTransfer.getData('todo'), title === 'Completed');
+        handleDragging(false);
+    }, [title, handleDragging])
 
     return (
             <Grid

@@ -16,21 +16,16 @@ import {Visibility, VisibilityOff} from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import {useAppDispatch, useAppSelector} from '../../../utils/hooks';
-import {clearPostsState, createNewPost, updatePost} from '../../../Store/reducers/postsReducer';
+import {clearPostsState, createNewPost, updatePost} from '../../../Store/reducers/posts/postsReducer';
 import { useNavigate, useParams } from 'react-router-dom';
+import {selectCurrentPost} from '../../../Store/reducers/posts/selectors';
 
-export const PostForm: React.FC = React.memo(() => {
+export const PostForm: React.FC = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const { postId } = useParams();
 
-    const post = useAppSelector(state => {
-      if(Number(postId) <= 100) {
-          return state.postsState.posts.find(item => item.id === Number(postId))
-      } else {
-          return state.postsState.myPosts.find(item => item.id === Number(postId))
-      }
-    })
+    const post = useAppSelector(state => selectCurrentPost(state, {postId: Number(postId)}));
 
     const formik = useFormik({
         initialValues: {
@@ -140,6 +135,7 @@ export const PostForm: React.FC = React.memo(() => {
                                 color={'secondary'}
                                 margin="normal"
                                 required
+                                disabled={true}
                                 label="UserId"
                                 type={userIdVisibility ? 'text' : 'password'}
                                 id="userId"
@@ -174,5 +170,5 @@ export const PostForm: React.FC = React.memo(() => {
             </Grid>
         </Container>
     );
-})
+}
 

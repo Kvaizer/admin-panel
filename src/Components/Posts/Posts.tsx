@@ -1,27 +1,38 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '../../utils/hooks';
-import {fetchPosts} from '../../Store/reducers/postsReducer';
+import {clearPostsState, fetchPosts} from '../../Store/reducers/posts/postsReducer';
 import {Grid} from '@mui/material';
 import Container from '@mui/material/Container';
 import styles from './Posts.module.sass'
-import Post from './Post/Post';
-import {fetchUserById} from '../../Store/reducers/usersReducer';
+import {fetchUserById} from '../../Store/reducers/users/usersReducer';
 import Button from '@mui/material/Button';
 import {useNavigate} from 'react-router-dom';
+import {
+    selectMyPosts,
+    selectPosts,
+    selectPostsOffset,
+    selectPostsStatus,
+    selectTotalCount
+} from '../../Store/reducers/posts/selectors';
+import {Post} from './Post/Post';
+import {StatusType} from '../../API/commonTypes';
+import LinearProgress from '@mui/material/LinearProgress';
+import {ErrorSnackbar} from '../features/ErrorSnackBar/ErrorSnackBar';
 
-export const Posts = React.memo(() => {
+export const Posts = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    const posts = useAppSelector(state => state.postsState.posts);
-    const myPosts = useAppSelector(state => state.postsState.myPosts);
-    const offset = useAppSelector(state => state.postsState.offset);
-    const totalCount = useAppSelector(state => state.postsState.totalCount);
+    const posts = useAppSelector(selectPosts);
+    const myPosts = useAppSelector(selectMyPosts);
+    const offset = useAppSelector(selectPostsOffset);
+    const totalCount = useAppSelector(selectTotalCount);
+    const status = useAppSelector(selectPostsStatus);
 
     const userIds = useMemo(() => Array.from(new Set(posts.map(post => post.userId))), [posts]);
 
-    const [startValueForFetching, setStartValueForFetching] = useState<number>(0);
-    const [isFetching, setIsFetching] = useState<boolean>(true);
+    const [startValueForFetching, setStartValueForFetching] = useState(0);
+    const [isFetching, setIsFetching] = useState(true);
 
     useEffect(() => {
         const fn = async () => {
@@ -50,6 +61,12 @@ export const Posts = React.memo(() => {
         }
     }, [totalCount])
 
+    useEffect(() => {
+        return () => {
+            dispatch(clearPostsState());
+        }
+    }, [])
+
     const block = useRef(null)
 
     const infiniteScrollHandler = useCallback(() => {
@@ -70,13 +87,13 @@ export const Posts = React.memo(() => {
     }, [])
 
     const postsComponents = useMemo(() => {
-       const anyPosts = posts.map((post) => {
+        const anyPosts = posts.map((post) => {
             return <Post key={post.id} post={post}/>
         });
 
-       const userPosts = myPosts.map((post) => {
-           return <Post key={post.id} post={post}/>
-       })
+        const userPosts = myPosts.map((post) => {
+            return <Post key={post.id} post={post}/>
+        })
 
         return userPosts.concat(...anyPosts)
     }, [posts, myPosts])
@@ -102,6 +119,7 @@ export const Posts = React.memo(() => {
                     alignItems: 'center',
                 }}
                 maxWidth="xl">
+                {status === StatusType.InProgress ? <LinearProgress/> : null}
                 <Grid
                     item
                     xs={6}
@@ -115,8 +133,9 @@ export const Posts = React.memo(() => {
                     {postsComponents}
                 </Grid>
             </Container>
+            <ErrorSnackbar/>
         </div>
     );
-});
+}
 
 
