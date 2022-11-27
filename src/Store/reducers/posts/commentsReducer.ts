@@ -1,4 +1,4 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {CommentsInitialStateType, CommentType, GetCommentsRequestParamsType} from '../../../API/posts/commentsTypes';
 import {QueryPaginationParams, StatusType} from '../../../API/commonTypes';
 import {postsAPI} from '../../../API/posts/postsAPI';
@@ -13,6 +13,9 @@ const initialState: CommentsInitialStateType = {
     isMore: true,
     error: ''
 }
+
+export const cleanTotalCount = createAction('comments/cleanTotalCount');
+export const clearPostComments = createAction<{postId: number}>('comments/clearPostComments')
 
 export const fetchCommentsByPostId = createAsyncThunk<{postId: number, comments: Array<CommentType>, totalCount: number}, GetCommentsRequestParamsType<QueryPaginationParams>, { rejectValue: { error: string } }>('comments/fetchComments', async ({postId, params= {start: 0, end: 5}}, {dispatch, rejectWithValue}) => {
     try {
@@ -58,6 +61,14 @@ export const slice = createSlice({
             .addCase(fetchCommentsByPostId.rejected, (state, {payload}) => {
                 state.error = payload?.error ? payload.error : 'Some error occurred';
                 state.status = StatusType.Failed;
+            })
+
+            .addCase(cleanTotalCount, (state) => {
+                state.totalCount = 0;
+            })
+
+            .addCase(clearPostComments, (state, {payload}) => {
+                state.comments[payload.postId] = [];
             })
     }
 })

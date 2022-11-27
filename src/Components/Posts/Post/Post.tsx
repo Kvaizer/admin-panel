@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import styles from './Post.module.sass'
 import {useAppDispatch, useAppSelector} from '../../../utils/hooks';
 import {Button} from '@mui/material';
-import {clearCommentsState, fetchCommentsByPostId} from '../../../Store/reducers/posts/commentsReducer';
+import {clearPostComments, fetchCommentsByPostId} from '../../../Store/reducers/posts/commentsReducer';
 import Comment from '../../Comment/Comment';
 import Paper from '@mui/material/Paper';
 import {deletePost} from '../../../Store/reducers/posts/postsReducer';
@@ -41,20 +41,19 @@ export const Post: React.FC<PostComponentPropsType> = React.memo(({post}) => {
 
     const hideCommentsButtonHandler = useCallback(() => {
         setStartValue(0);
-        dispatch(clearCommentsState());
-    }, [])
+        dispatch(clearPostComments({postId: post.id}));
+    }, [post]);
 
     const deleteButtonHandler = useCallback(() => {
         dispatch(deletePost(post.id))
-    }, [post])
+    }, [post]);
 
     const updateButtonHandler = useCallback(() => {
         navigate(`${post.id}`)
-    }, [post])
+    }, [post]);
 
     return (
         <Paper elevation={6} className={styles.wrapper}>
-
             <Grid key={post.id} container className={styles.container} direction={'column'}
                   style={{margin: '10px auto'}}>
                 <div className={styles.header}>

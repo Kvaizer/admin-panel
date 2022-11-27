@@ -18,6 +18,7 @@ import {Post} from './Post/Post';
 import {StatusType} from '../../API/commonTypes';
 import LinearProgress from '@mui/material/LinearProgress';
 import {ErrorSnackbar} from '../features/ErrorSnackBar/ErrorSnackBar';
+import { clearCommentsState } from '../../Store/reducers/posts/commentsReducer';
 
 export const Posts = () => {
     const dispatch = useAppDispatch();
@@ -64,6 +65,7 @@ export const Posts = () => {
     useEffect(() => {
         return () => {
             dispatch(clearPostsState());
+            dispatch(clearCommentsState());
         }
     }, [])
 
